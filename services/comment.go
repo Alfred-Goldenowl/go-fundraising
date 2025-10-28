@@ -2,13 +2,15 @@ package services
 
 import (
 	"context"
-	"github.com/gocql/gocql"
 	"time"
+
+	"github.com/gocql/gocql"
+
+	"go-fundraising/db"
+	"go-fundraising/models"
 
 	"github.com/scylladb/gocqlx"
 	"github.com/scylladb/gocqlx/qb"
-	"go-fundraising/db"
-	"go-fundraising/models"
 )
 
 type CommentService struct{}

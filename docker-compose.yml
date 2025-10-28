@@ -17,18 +17,18 @@ services:
       retries: 5
 
   app:
-    build: .
-    container_name: go_app
+    image: alfredtran/gin-app:latest
+    container_name: go-app
     depends_on:
       scylla:
         condition: service_healthy
     environment:
-      - SCYLLA_HOST=scylla
-      - SCYLLA_PORT=9042
-      - APP_PORT=8080
-      - SCYLLA_KEYSPACE=go_fundraising
+      SCYLLA_HOST: scylla
+      SCYLLA_PORT: 9042
+      SCYLLA_KEYSPACE: go_fundraising
+      APP_PORT: 8080
     ports:
-      - "8080"
+      - "8080:8080"
 
   nginx:
     image: nginx:latest
@@ -39,6 +39,17 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - app
+    restart: always
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 --cleanup --include-restarting
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=30
+    restart: always
 
 volumes:
   scylla_data:
