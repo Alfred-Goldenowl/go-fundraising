@@ -46,4 +46,4 @@ jobs:
 
       - name: Notice build success (for PR)
         if: github.event_name == 'pull_request'
-        run: echo "✅ Build completed successfully for PR
+        run: echo "✅ Build completed successfully for PR"
