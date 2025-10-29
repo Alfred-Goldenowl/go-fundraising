@@ -26,7 +26,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: false        # luôn build local image, không push
+          push: false
           tags: test-build:latest
 
       - name: Log in to Docker Hub
