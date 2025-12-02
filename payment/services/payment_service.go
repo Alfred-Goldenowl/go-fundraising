@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-fundraising/db"
 	"go-fundraising/payment/models"
+	"log"
 
 	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx"
@@ -46,4 +47,32 @@ func (s *PaymentService) GetPaymentsByCampaignID(
 	}
 
 	return results, nil
+}
+
+func (s *PaymentService) CheckoutExists(checkoutID string) (bool, error) {
+	stmt, names := qb.Select(models.PaymentHistoryTable.Name).
+		Columns("id").
+		Where(qb.Eq("checkout_id")).
+		Limit(1).
+		ToCql()
+
+	var result struct {
+		ID gocql.UUID `db:"id"`
+	}
+
+	q := gocqlx.Query(db.ScyllaSession.Query(stmt), names).
+		BindMap(map[string]interface{}{"checkout_id": checkoutID})
+
+	err := q.Get(&result)
+
+	log.Println(result)
+
+	if err != nil {
+		if err == gocql.ErrNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
 }

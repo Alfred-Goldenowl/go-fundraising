@@ -110,27 +110,30 @@ func PaymentSuccessHandler(c *gin.Context) {
 		return
 	}
 
-	CampaignID, _ := gocql.ParseUUID(sess.Metadata["campaign_id"])
-	UserID, _ := gocql.ParseUUID(sess.Metadata["user_id"])
-	user, _ := userService.GetUserByID(context.Background(), UserID)
-	currentPayment := models.PaymentHistory{
-		ID:         gocql.TimeUUID(),
-		CampaignID: CampaignID,
-		Username:   user.Username,
-		UserID:     UserID,
-		CreatedAt:  time.Now(),
-		CheckoutID: checkoutID,
-		Amount:     sess.AmountTotal / 100,
-	}
+	isExist, err := paymentService.CheckoutExists(checkoutID)
+	if !isExist {
+		CampaignID, _ := gocql.ParseUUID(sess.Metadata["campaign_id"])
+		UserID, _ := gocql.ParseUUID(sess.Metadata["user_id"])
+		user, _ := userService.GetUserByID(context.Background(), UserID)
+		currentPayment := models.PaymentHistory{
+			ID:         gocql.TimeUUID(),
+			CampaignID: CampaignID,
+			Username:   user.Username,
+			UserID:     UserID,
+			CreatedAt:  time.Now(),
+			CheckoutID: checkoutID,
+			Amount:     sess.AmountTotal / 100,
+		}
 
-	if err := paymentService.NewPayment(context.Background(), currentPayment); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create currentPayment"})
-		return
-	}
+		if err := paymentService.NewPayment(context.Background(), currentPayment); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create currentPayment"})
+			return
+		}
 
-	if err := campaignService.UpdateCampaignAmountCollected(context.Background(), CampaignID, sess.AmountTotal/100); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		if err := campaignService.UpdateCampaignAmountCollected(context.Background(), CampaignID, sess.AmountTotal/100); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	data := PaymentSuccessData{
