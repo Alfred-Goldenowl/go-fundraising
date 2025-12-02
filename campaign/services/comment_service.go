@@ -2,12 +2,12 @@ package services
 
 import (
 	"context"
+	"go-fundraising/campaign/models"
 	"time"
 
 	"github.com/gocql/gocql"
 
 	"go-fundraising/db"
-	"go-fundraising/models"
 
 	"github.com/scylladb/gocqlx"
 	"github.com/scylladb/gocqlx/qb"
@@ -25,10 +25,10 @@ func (s *CommentService) InsertComment(ctx context.Context, comment models.Comme
 		ExecRelease()
 }
 
-func (s *CommentService) GetCommentsByPostID(ctx context.Context, postID string, perPage int, lastCreatedAt time.Time) ([]models.Comment, error) {
+func (s *CommentService) GetCommentsByCampaignID(ctx context.Context, CampaignID string, perPage int, lastCreatedAt time.Time) ([]models.Comment, error) {
 
 	qbSelect := qb.Select(models.CommentTable.Name).
-		Where(qb.Eq("post_id")).
+		Where(qb.Eq("campaign_id")).
 		OrderBy("created_at", qb.DESC).
 		Limit(uint(perPage))
 
@@ -39,7 +39,7 @@ func (s *CommentService) GetCommentsByPostID(ctx context.Context, postID string,
 	stmt, names := qbSelect.ToCql()
 
 	var comments []models.Comment
-	bindParams := qb.M{"post_id": postID}
+	bindParams := qb.M{"campaign_id": CampaignID}
 
 	if !lastCreatedAt.IsZero() {
 		bindParams["created_at"] = lastCreatedAt
