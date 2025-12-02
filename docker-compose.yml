@@ -26,9 +26,7 @@ services:
       SCYLLA_HOST: scylla
       SCYLLA_PORT: 9042
       SCYLLA_KEYSPACE: go_fundraising
-      ELASTIC_URL: http://elasticsearch:9200
       APP_PORT: 8080
-      ELASTIC_INDEX: campaigns
     ports:
       - "8080:8080"
 
@@ -53,24 +51,5 @@ services:
       - WATCHTOWER_POLL_INTERVAL=30
     restart: always
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - xpack.security.enabled=false
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -s http://localhost:9200/_cluster/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
 volumes:
   scylla_data:
-  es_data:
